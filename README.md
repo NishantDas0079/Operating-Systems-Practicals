@@ -17,20 +17,20 @@ Paper: Operating Systems (DSC08)
 
 ## Contents
 
-| # | Practical | Program |
-|---|-----------|:-------:|
-| 1 | [Demonstration of Operating System Functions using an OS Simulator](#practical-1) | — |
-| 2 | [LINUX Commands for Information, File and Directory Management](#practical-2) | — |
-| 3 | [LINUX Commands for Process Control, Communication and Protection](#practical-3) | — |
-| 4 | [Parent and Child Processes using fork() and exec()](#practical-4) | Yes |
-| 5 | [Kernel Version and CPU Information](#practical-5) | Yes |
-| 6 | [Configured, Free and Used Memory Information](#practical-6) | Yes |
-| 7 | [Copying a File using System Calls](#practical-7) | Yes |
-| 8 | [First Come First Serve (FCFS) Scheduling Algorithm](#practical-8) | Yes |
-| 9 | [Shortest Job First (SJF) Scheduling Algorithm](#practical-9) | Yes |
-| 10 | [Non-preemptive Priority Based Scheduling Algorithm](#practical-10) | Yes |
-| 11 | [Sum of n Numbers using Pthreads](#practical-11) | Yes |
-| 12 | [First-Fit, Best-Fit and Worst-Fit Allocation Strategies](#practical-12) | Yes |
+| # | Practical | Type |
+|---|-----------|:--------:|
+| 1 | [Demonstration of Operating System Functions using an OS Simulator](#practical-1) | Demo |
+| 2 | [LINUX Commands for Information, File and Directory Management](#practical-2) | Commands |
+| 3 | [LINUX Commands for Process Control, Communication and Protection](#practical-3) | Commands |
+| 4 | [Parent and Child Processes using fork() and exec()](#practical-4) | Program |
+| 5 | [Kernel Version and CPU Information](#practical-5) | Program |
+| 6 | [Configured, Free and Used Memory Information](#practical-6) | Program |
+| 7 | [Copying a File using System Calls](#practical-7) | Program |
+| 8 | [First Come First Serve (FCFS) Scheduling Algorithm](#practical-8) | Program |
+| 9 | [Shortest Job First (SJF) Scheduling Algorithm](#practical-9) | Program |
+| 10 | [Non-preemptive Priority Based Scheduling Algorithm](#practical-10) | Program |
+| 11 | [Sum of n Numbers using Pthreads](#practical-11) | Program |
+| 12 | [First-Fit, Best-Fit and Worst-Fit Allocation Strategies](#practical-12) | Program |
 
 ---
 
@@ -76,7 +76,168 @@ Execute various LINUX commands for:
 2. **File Management:** `cat`, `cp`, `rm`, `mv`, `cmp`, `comm`, `diff`, `find`, `grep`, `awk`
 3. **Directory Management:** `cd`, `mkdir`, `rmdir`, `ls`
 
-> **Note:** Executed on a Linux terminal. Output is recorded as screenshots in the practical file.
+### Solution
+
+> Outputs that depend on the machine — the working directory, the date, the logged-in user and file ownership — are shown illustratively. Everything else below was captured from a real Linux session.
+
+#### (i) Information Maintenance
+
+| Command | Purpose | Example |
+|---|---|---|
+| `pwd` | Prints the absolute path of the current working directory | `pwd` |
+| `date` | Displays the current system date and time | `date` |
+| `cal` | Displays a calendar — the current month by default, or a given month/year | `cal`, `cal 2026` |
+| `who` | Lists the users currently logged in to the system | `who` |
+| `wc` | Counts lines, words and bytes in a file | `wc notes.txt` |
+| `clear` | Clears the terminal screen | `clear` |
+
+```console
+$ pwd
+/home/nishant/os-practical
+
+$ date
+Tue Nov 24 07:15:19 UTC 2026
+
+$ who
+nishant  tty7         2026-11-24 09:02 (:0)
+
+$ wc notes.txt
+ 3  7 56 notes.txt
+
+$ wc -l notes.txt
+3 notes.txt
+
+$ wc -w notes.txt
+7 notes.txt
+
+$ wc -c notes.txt
+56 notes.txt
+```
+
+`wc` prints the line, word and byte counts in that order; the options `-l`, `-w` and `-c` select just one of them.
+
+`cal` prints a month grid, and `cal 2026` prints the whole year. On Debian and Ubuntu it is provided by the `ncal` package. `clear` produces no output — it resets the terminal display.
+
+#### (ii) File Management
+
+| Command | Purpose | Example |
+|---|---|---|
+| `cat` | Displays the contents of a file, or concatenates several files | `cat notes.txt` |
+| `cp` | Copies a file (`-r` for a directory and its contents) | `cp notes.txt notes_backup.txt` |
+| `rm` | Removes files (`-r` recursive, `-f` force) | `rm notes_backup.txt` |
+| `mv` | Moves a file, or renames it if the destination is in the same directory | `mv notes_backup.txt renamed.txt` |
+| `cmp` | Compares two files byte by byte and reports the first difference | `cmp fruits1.txt fruits2.txt` |
+| `comm` | Compares two **sorted** files line by line and prints three columns | `comm s1.txt s2.txt` |
+| `diff` | Shows the line-by-line differences needed to turn one file into the other | `diff fruits1.txt fruits2.txt` |
+| `find` | Searches the directory tree for files by name, type or other attributes | `find . -name "*.txt"` |
+| `grep` | Searches for a pattern inside files and prints the matching lines | `grep "an" fruits1.txt` |
+| `awk` | Pattern-scanning language used for field extraction and arithmetic on columns | `awk '{ print NR": "$0 }' fruits1.txt` |
+
+```console
+$ cat notes.txt
+Operating Systems
+Linux commands practical
+Semester III
+
+$ cp notes.txt notes_backup.txt
+$ mv notes_backup.txt renamed.txt
+
+$ cmp fruits1.txt fruits1_copy.txt
+$ echo $?
+0
+
+$ cmp fruits1.txt fruits2.txt
+fruits1.txt fruits2.txt differ: byte 1, line 1
+$ echo $?
+1
+
+$ comm s1.txt s2.txt
+apple
+		banana
+		cherry
+	date
+
+$ diff fruits1.txt fruits2.txt
+1d0
+< apple
+3a3
+> date
+
+$ find . -name "*.txt" -type f
+./notes.txt
+./fruits1.txt
+./fruits2.txt
+./fruits1_copy.txt
+./renamed.txt
+
+$ grep "an" fruits1.txt
+banana
+
+$ awk '{ print NR": "$0 }' fruits1.txt
+1: apple
+2: banana
+3: cherry
+
+$ awk '{ s += $1 } END { print "Sum =", s }' nums.txt
+Sum = 60
+```
+
+Points worth remembering:
+
+- `cmp` exits with status `0` when the files are identical and `1` when they differ; it prints nothing at all when they match.
+- `comm` requires **sorted** input. Its three columns are: lines only in the first file, lines only in the second, and lines common to both. `comm -12` shows only the common lines.
+- `diff` uses `<` for lines from the first file and `>` for lines from the second.
+- `grep -c` prints only the count of matching lines; `grep -i` ignores case; `grep -r` searches a whole directory tree.
+- `awk` reads input line by line; `NR` is the current line number, `$0` the whole line, `$1` the first field.
+
+#### (iii) Directory Management
+
+| Command | Purpose | Example |
+|---|---|---|
+| `cd` | Changes the current working directory (`cd ..` moves to the parent) | `cd demo` |
+| `mkdir` | Creates a directory (`-p` creates missing parent directories) | `mkdir -p demo/sub` |
+| `rmdir` | Removes an **empty** directory only | `rmdir demo/sub` |
+| `ls` | Lists directory contents (`-l` long format, `-a` includes hidden files, `-R` recursive) | `ls -l` |
+
+```console
+$ mkdir -p demo/sub
+$ ls -d demo demo/sub
+demo
+demo/sub
+
+$ cd demo
+$ pwd
+/home/nishant/os-practical/demo
+$ cd ..
+
+$ ls -R demo
+demo:
+sub
+
+demo/sub:
+
+$ rmdir demo/sub
+$ rmdir demo
+```
+
+`rmdir` refuses to remove a directory that still contains files:
+
+```console
+$ rmdir demo/x
+rmdir: failed to remove 'demo/x': Directory not empty
+```
+
+Use `rm -r demo/x` when the directory is not empty.
+
+A long listing shows the file type and permissions in the first column:
+
+```console
+$ ls -l
+-rw-rw-r--. 1 nishant nishant   56 Nov 24 07:15 notes.txt
+drwxrwxr-x. 2 nishant nishant 4096 Nov 24 07:15 demo
+```
+
+The leading `-` marks a regular file and `d` marks a directory; the next nine characters are the owner, group and other permissions.
 
 ---
 
@@ -92,7 +253,140 @@ Execute various LINUX commands for:
 2. **Communication:** Input-output redirection, Pipe
 3. **Protection Management:** `chmod`, `chown`, `chgrp`
 
-> **Note:** Executed on a Linux terminal. Output is recorded as screenshots in the practical file.
+### Solution
+
+#### (i) Process Control
+
+| Command | Purpose | Example |
+|---|---|---|
+| `fork` | **System call** (not a shell command) that creates a new child process | called from a program, see below |
+| `getpid` | **System call** returning the calling process's PID; `getppid` returns the parent's PID | called from a program, see below |
+| `ps` | Prints a snapshot of the currently running processes | `ps -f` |
+| `kill` | Sends a signal to a process; `-9` sends SIGKILL, `-l` lists signal names | `kill -9 2841` |
+| `sleep` | Suspends execution for the given number of seconds | `sleep 2` |
+
+> `fork` and `getpid` are system calls rather than shell utilities, so there is no `fork` command on the command line. They are demonstrated with a short program that calls them directly.
+
+```console
+$ ps -f
+UID        PID  PPID  C STIME TTY          TIME CMD
+nishant   2841  2798  0 09:02 pts/0    00:00:00 bash
+nishant   3105  2841  0 09:12 pts/0    00:00:00 ps -f
+```
+
+`PID` is the process id, `PPID` the parent process id — here `ps` was started by `bash`, so `2841` is its parent.
+
+`fork()` and `getpid()` called from Python:
+
+```python
+import os
+
+print("parent pid =", os.getpid(), flush=True)
+pid = os.fork()
+
+if pid == 0:
+    print("child  pid =", os.getpid(), " parent pid =", os.getppid(), flush=True)
+    os._exit(0)
+else:
+    os.wait()
+    print("child finished, parent pid =", os.getpid(), flush=True)
+```
+
+```console
+$ python3 fork_demo.py
+parent pid = 60
+child  pid = 61  parent pid = 60
+child finished, parent pid = 60
+```
+
+`fork()` returns `0` in the child and the child's PID in the parent, which is how the two branches are distinguished. The child's `getppid()` is the parent's PID.
+
+```console
+$ sleep 2
+$ kill -l
+ 1) SIGHUP	 2) SIGINT	 3) SIGQUIT	 4) SIGILL	 5) SIGTRAP
+ 6) SIGABRT	 7) SIGBUS	 8) SIGFPE	 9) SIGKILL	10) SIGUSR1
+
+$ kill -0 2841
+$ echo $?
+0
+```
+
+`kill -0` sends no signal at all — it only checks whether the process exists, returning `0` if it does. To actually terminate a process, use `kill <PID>`, or `kill -9 <PID>` to send SIGKILL, which cannot be caught or ignored.
+
+#### (ii) Communication — redirection and pipes
+
+| Operator | Purpose | Example |
+|---|---|---|
+| `>` | Redirects standard output to a file, **overwriting** it | `echo "line one" > out.txt` |
+| `>>` | Redirects standard output to a file, **appending** to it | `echo "line two" >> out.txt` |
+| `<` | Redirects standard input from a file | `wc -l < out.txt` |
+| `\|` | Pipes the output of one command into the input of the next | `cat out.txt \| grep line \| wc -l` |
+
+```console
+$ echo "line one" > out.txt
+$ cat out.txt
+line one
+
+$ echo "line two" >> out.txt
+$ cat out.txt
+line one
+line two
+
+$ wc -l < out.txt
+2
+
+$ cat out.txt | grep line | wc -l
+2
+```
+
+With `<` the command reads the file as its standard input, so `wc -l` prints only the count and not the filename. A pipe connects two processes directly through an in-kernel buffer, so no temporary file is created — `cat out.txt | grep line | wc -l` counts the lines containing `line` without writing anything to disk.
+
+The common redirections are `0` for standard input, `1` for standard output and `2` for standard error, so `command 2> error.log` captures only the error stream.
+
+#### (iii) Protection Management
+
+| Command | Purpose | Example |
+|---|---|---|
+| `chmod` | Changes a file's permissions, in octal or symbolic form | `chmod 755 script.sh`, `chmod u+x script.sh` |
+| `chown` | Changes the owner of a file — requires root privileges | `sudo chown root script.sh` |
+| `chgrp` | Changes the group of a file — requires ownership or root | `sudo chgrp root script.sh` |
+
+Permissions are three bits for each of three classes — owner, group and others — where read is `4`, write is `2` and execute is `1`. So `755` means owner `rwx`, group `r-x`, others `r-x`.
+
+```console
+$ touch script.sh
+
+$ chmod 644 script.sh
+$ ls -l script.sh
+-rw-r--r--. 1 nishant nishant 0 Nov 24 07:15 script.sh
+
+$ chmod 755 script.sh
+$ ls -l script.sh
+-rwxr-xr-x. 1 nishant nishant 0 Nov 24 07:15 script.sh
+
+$ chmod 600 script.sh
+$ ls -l script.sh
+-rw-------. 1 nishant nishant 0 Nov 24 07:15 script.sh
+```
+
+| Octal | Symbolic | Meaning |
+|:---:|:---:|---|
+| `644` | `rw-r--r--` | owner reads and writes; group and others read only |
+| `755` | `rwxr-xr-x` | owner reads, writes and executes; group and others read and execute |
+| `600` | `rw-------` | owner reads and writes; nobody else has any access |
+
+The same changes can be made symbolically: `chmod u+x script.sh` adds execute permission for the owner, `chmod g-w script.sh` removes write permission from the group, and `chmod o=r script.sh` sets others to read only.
+
+`chown` and `chgrp` need elevated privileges, and fail without them:
+
+```console
+$ chown root script.sh
+chown: changing ownership of 'script.sh': Operation not permitted
+
+$ sudo chown root script.sh
+$ sudo chgrp root script.sh
+```
 
 ---
 
@@ -578,7 +872,7 @@ for i in range(np):
 ## Notes
 
 - All programs are written in Python 3 and use only the standard library.
-- Practicals 1, 2 and 3 are demonstrations and Linux command sessions; their output is recorded as screenshots in the practical file.
+- Practical 1 is an OS simulator demonstration and its output is recorded as screenshots in the practical file. Practicals 2 and 3 are Linux command sessions, documented in full above with the purpose and output of each command.
 - Practical 4 uses the `multiprocessing` module to create the child process, and Practical 11 uses the `threading` module for thread creation.
 
 ---
